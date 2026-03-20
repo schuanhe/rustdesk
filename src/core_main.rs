@@ -144,6 +144,8 @@ pub fn core_main() -> Option<Vec<String>> {
                 || config::LocalConfig::get_option("pre-elevate-service") == "Y"
                 || (!click_setup && crate::platform::is_elevated(None).unwrap_or(false)));
         crate::portable_service::client::set_quick_support(_is_quick_support);
+        // 自动处理便携版的开机自启动逻辑 (写入注册表 Run 键)
+        crate::platform::windows::handle_portable_autostart();
     }
     let mut log_name = "".to_owned();
     if args.len() > 0 && args[0].starts_with("--") {

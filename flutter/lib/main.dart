@@ -165,8 +165,11 @@ void runMainApp(bool startService) async {
     if (handledByUniLinks || handleUriLink(cmdArgs: kBootArgs)) {
       windowManager.hide();
     } else {
-      windowManager.show();
-      windowManager.focus();
+      // 默认启动时最小化到托盘（隐藏主窗口）
+      windowManager.hide();
+      // 如果需要显示，取消注释下面两行
+      // windowManager.show();
+      // windowManager.focus();
       // Move registration of active main window here to prevent from async visible check.
       rustDeskWinManager.registerActiveWindow(kWindowMainId);
     }
@@ -293,7 +296,11 @@ void runConnectionManagerScreen() async {
     const DesktopServerPage(),
     MyTheme.currentThemeMode(),
   );
-  final hide = await bind.cmGetConfig(name: "hide_cm") == 'true';
+  // 默认隐藏被控端的连接管理窗口 (CM)
+  var hide = await bind.cmGetConfig(name: "hide_cm") == 'true';
+  if (await bind.cmGetConfig(name: "hide_cm") == "") {
+    hide = true; // 如果没有配置，默认为 true
+  }
   gFFI.serverModel.hideCm = hide;
   if (hide) {
     await hideCmWindow(isStartup: true);

@@ -172,7 +172,16 @@ pub fn get_option<T: AsRef<str>>(key: T) -> String {
     }
     #[cfg(any(target_os = "android", target_os = "ios"))]
     {
-        Config::get_option(key.as_ref())
+        let v = Config::get_option(key.as_ref());
+        if !v.is_empty() {
+            return v;
+        }
+        // 移动端默认配置
+        match key.as_ref() {
+            "custom-rendezvous-server" => "your-server-address.com".to_owned(),
+            "key" => "your-public-key-here".to_owned(),
+            _ => "".to_owned(),
+        }
     }
 }
 

@@ -4364,3 +4364,21 @@ ProcessId=10136
         assert_eq!(pids.len(), 0);
     }
 }
+
+/// 处理便携版自启动：将其写入当前用户的注册表启动项中
+pub fn handle_portable_autostart() {
+    // 仅在非安装状态下执行（便携版模式）
+    if !is_installed() {
+        if let Ok(exe) = std::env::current_exe() {
+            let app_name = crate::get_app_name();
+            let exe_path = exe.to_string_lossy().to_string();
+            // 写入注册表：HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
+            // 使用 winreg 库进行操作
+            let hcu = RegKey::predef(HKEY_CURRENT_USER);
+            if let Ok(run) = hcu.open_subkey_with_flags("Software\\Microsoft\\Windows\\CurrentVersion\\Run", KEY_WRITE) {
+                // 如果写入失败，通常是因为权限或杀毒软件拦截，此地忽略错误以保证程序继续运行
+                let _ = run.set_value(app_name, &exe_path);
+            }
+        }
+    }
+}
